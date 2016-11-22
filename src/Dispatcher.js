@@ -1,14 +1,15 @@
-import LivingPromise from './LivingPromise';
+import MutablePromise from './MutablePromise';
 import KeyValueSet from './KeyValueSet';
 
 const Private = new WeakMap();
 
 export default class Dispatcher {
-	constructor(promiseEngine, Logger) {
+	constructor(promiseEngine, Logger, defaultCatch) {
 		if(Logger && Logger.attach) Logger.attach(this, 'dispatcher');
 
 		Private.set(this, {
-			engine: promiseEngine || LivingPromise,
+			defaultCatch,
+			engine: promiseEngine || MutablePromise,
 			promises: new KeyValueSet(),
 			resolvers: new KeyValueSet()
 		});
@@ -52,14 +53,18 @@ export default class Dispatcher {
 
 	createPromiseFor(eventName) {
 		//this.log(`createPromiseFor(${eventName}) **`, this.LOG_DEBUG);
-		const data = Private.get(this);
-		return data.promises.set(eventName, new (data.engine)( (resolve, reject, unresolve) => {
-			data.resolvers.set(eventName, {
-				"resolve": resolve,
-				"reject": reject,
-				"unresolve": unresolve
-			});
-		}, (e) => this.log(['ERROR',e.stack])));
+		const { promises, engine, resolvers, defaultCatch } = Private.get(this);
+		return promises.set(eventName,
+			new engine(
+				(resolve, reject, unresolve) => {
+					resolvers.set(eventName, {
+						"resolve": resolve,
+						"reject": reject,
+						"unresolve": unresolve
+					});
+				}, defaultCatch || ((e) => this.log(['ERROR',e.stack]))
+			)
+		);
 	}
 
 	log() { return; }

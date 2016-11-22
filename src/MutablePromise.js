@@ -1,31 +1,36 @@
-const [ ERROR, SUCCESS, EMPTY_ARG ] = [ 'catch', 'then', 'EMPTY_ARG' ];
+const [ STATE_INITIAL, STATE_REJECTED, STATE_FULFILLED, EMPTY_ARG ] = [ void 0, 'catch', 'then', 'EMPTY_ARG' ];
 
 const Private = new WeakMap();
 
-const resolve = (val, type) => {
+const required = (method, paramName) => { throw new Error(`MutablePromise.${method}(): missing required parameter: ${paramName}`) }
+
+function resolverFunc(val, type) {
 	const priv = Private.get(this);
-	const cbs = priv[type];
+	const cbs = priv[`${type}s`];
 	priv.value = val;
 	priv.valueType = type;
 	cbs.forEach(v => v(val));
 };
 
 export default class MutablePromise {
-	constructor(fn, context = EMPTY_ARG) {
+	constructor(fn = () => {}, defaultCatch) {
 		const priv = {
-			resolve: (v) => resolve.call(this, v, SUCCESS),
-			reject: (e) => resolve.call(this, e, ERROR),
-			unset: () => {
+			resolve: (v) => setTimeout( () => resolverFunc.call(this, v, STATE_FULFILLED), 0 ),
+			reject: (e) => setTimeout( () => resolverFunc.call(this, e, STATE_REJECTED), 0 ),
+			unset: () => setTimeout( () => {
 				const priv = Private.get(this);
-				priv.value = priv.valueType = void 0;
+				priv.value = priv.valueType = STATE_INITIAL;
 				priv.unsetters.forEach( v => v() );
-			},
+			}, 0),
 			thens: [],
-			catches: [],
+			catchs: [],
 			unsetters: [],
-			valueType: void 0,
+			defaultCatch: defaultCatch,
+			valueType: STATE_INITIAL,
 			value: void 0
 		};
+
+		if(typeof defaultCatch === 'function') priv.catchs.push(defaultCatch);
 
 		const { resolve, reject, unset } = priv;
 
@@ -34,49 +39,34 @@ export default class MutablePromise {
 		if(fn instanceof MutablePromise
 		|| Promise && Promise.prototype && fn instanceof Promise) {
 			fn.then(priv.resolve, priv.reject);
-		} else {
-			if(context !== EMPTY_ARG) fn.call(context, resolve, reject, unset);
-			else fn(resolve, reject, unset);
+		} else fn(resolve, reject, unset);
+	}
+
+	then(onFulfilled, onRejected) {
+		if(typeof onFulfilled !== 'function' && typeof onRejected !== 'function') {
+			required('then', 'requires either onFulfilled or onRejected');
 		}
-	}
 
-	then(onFulfilled, onRejected = () => {}) {
-		return new Thenable( (res, rej, un) => {
-			const { thens, catches, unsetters } = Private.get(this);
+		if(typeof onFulfilled !== 'function') onFulfilled = () => {};
+		if(typeof onRejected !== 'function') onRejected = () => {};
 
-			thens.push( (v) => {
-				try {
-					return res(onFulfilled(v));
-				} catch(e) {
-					onRejected(e); rej(e);
-				}
-			});
+		const { defaultCatch } = Private.get(this);
 
-			catches.push( (v) => {
-				try {
-					return rej(onRejected(v));
-				} catch(e) {
-					rej(e);
-				}
-			});
-
-			unsetters.push( (v) => un() );
-		});
-	}
-
-	once(onFulfilled, onRejected = () => {}) {
-		return new Thenable( (res, rej, un) => {
-			const { thens, catches, unsetters } = Private.get(this);
+		return new MutablePromise( (res, rej, un) => {
+			const {
+				thens,
+				catchs,
+				unsetters,
+				value,
+				valueType
+			} = Private.get(this);
 
 			const thn = (v) => {
 				try {
 					return res(onFulfilled(v));
 				} catch(e) {
 					onRejected(e); rej(e);
-				} finally {
-					const idx = thens.indexOf(thn);
-					if(idx > -1) thens.splice(idx,1);
-				}
+				} finally { once(); }
 			};
 
 			const ctch = (v) => {
@@ -84,17 +74,49 @@ export default class MutablePromise {
 					return rej(onRejected(v));
 				} catch(e) {
 					rej(e);
-				} finally {
-					const idx = catches.indexOf(ctch);
-					if(idx > -1) catches.splice(idx,1);
-				}
+				} finally { once(); }
 			};
 
-			thens.push(thn);
-			catches.push(ctch);
+			thens.push( thn );
+			catchs.push( ctch );
 			unsetters.push( (v) => un() );
-		});
+
+			function once(){
+				if(onFulfilled.__ONCE) {
+					const tidx = thens.indexOf(thn);
+					if(tidx > -1) thens.splice(tidx,1);
+
+					const cidx = catchs.indexOf(ctch);
+					if(cidx > -1) catchs.splice(cidx,1);
+
+					delete onFulfilled.__ONCE
+				}
+			}
+
+			if(valueType === STATE_FULFILLED) thn(value);
+			else if(valueType === STATE_REJECTED) ctch(value);
+		}, defaultCatch);
 	}
 
-	catch(cb) { Private.get(this).thens.push(cb) }
+	once(onFulfilled, onRejected) {
+		if(typeof onFulfilled !== 'function' && typeof onRejected !== 'function') {
+			required('then', 'requires either onFulfilled or onRejected');
+		}
+
+		if(typeof onFulfilled !== 'function') onFulfilled = () => {};
+		if(typeof onRejected !== 'function') onRejected = () => {};
+
+		Object.defineProperty(onFulfilled, '__ONCE', {
+			configurable: true,
+			writable: false,
+			enumerable: false,
+			value: true
+		});
+
+		return this.then(onFulfilled, onRejected);
+	}
+
+	catch(onRejected = required('catch', 'onRejected')) {
+		return this.then(() => {}, onRejected);
+	}
 }
