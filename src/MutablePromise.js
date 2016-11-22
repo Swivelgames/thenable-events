@@ -9,19 +9,19 @@ function resolverFunc(val, type) {
 	const cbs = priv[`${type}s`];
 	priv.value = val;
 	priv.valueType = type;
-	cbs.forEach(v => v(val));
+	cbs.forEach(v => setTimeout( () => v(val), 0));
 };
 
 export default class MutablePromise {
 	constructor(fn = () => {}, defaultCatch) {
 		const priv = {
-			resolve: (v) => setTimeout( () => resolverFunc.call(this, v, STATE_FULFILLED), 0 ),
-			reject: (e) => setTimeout( () => resolverFunc.call(this, e, STATE_REJECTED), 0 ),
-			unset: () => setTimeout( () => {
+			resolve: (v) => resolverFunc.call(this, v, STATE_FULFILLED),
+			reject: (e) => resolverFunc.call(this, e, STATE_REJECTED),
+			unset: () => {
 				const priv = Private.get(this);
 				priv.value = priv.valueType = STATE_INITIAL;
 				priv.unsetters.forEach( v => v() );
-			}, 0),
+			},
 			thens: [],
 			catchs: [],
 			unsetters: [],
