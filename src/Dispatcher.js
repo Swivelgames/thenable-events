@@ -15,7 +15,10 @@ export default class Dispatcher {
 		});
 	}
 
-	when(eventName) {
+	when(eventName, invalidFunc) {
+		if(invalidFunc !== void 0) {
+			throw new TypeError('when: Only one parameter is allowed. Did you mean to write .when().then()?');
+		}
 		this.log(`when(${eventName})`, this.LOG_LOUD);
 		return this.getPromise(eventName);
 	}
