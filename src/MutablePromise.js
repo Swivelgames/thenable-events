@@ -1,4 +1,9 @@
-const [ STATE_INITIAL, STATE_REJECTED, STATE_FULFILLED, EMPTY_ARG ] = [ void 0, 'catch', 'then', 'EMPTY_ARG' ];
+const [
+	STATE_INITIAL,
+	STATE_REJECTED,
+	STATE_FULFILLED,
+	EMPTY_ARG
+] = [ void 0, 'catch', 'then', 'EMPTY_ARG' ];
 
 const Private = new WeakMap();
 
@@ -42,6 +47,24 @@ export default class MutablePromise {
 		} else fn(resolve, reject, unset);
 	}
 
+	unlisten(fn, type) {
+		if(typeof fn !== 'function') {
+			required('unlisten', 'requires either onFulfilled or onRejected');
+		}
+
+		if(type !== 'then' && then !== 'catch') {
+			required('unlisten', 'second parameter must be either \'then\' or \'catch\'');
+		}
+
+		const cntx = Private.get(this);
+		const arr = cntx[type];
+
+		const idx = arr.indexOf(fn);
+		if(idx > -1) arr.splice(idx,1);
+
+		delete onFulfilled.__ONCE;
+	}
+
 	then(onFulfilled, onRejected) {
 		if(typeof onFulfilled !== 'function' && typeof onRejected !== 'function') {
 			required('then', 'requires either onFulfilled or onRejected');
@@ -52,7 +75,7 @@ export default class MutablePromise {
 
 		const { defaultCatch } = Private.get(this);
 
-		return new MutablePromise( (res, rej, un) => {
+		return new this.constructor( (res, rej, un) => {
 			const {
 				thens,
 				catchs,
@@ -96,24 +119,6 @@ export default class MutablePromise {
 			if(valueType === STATE_FULFILLED) thn(value);
 			else if(valueType === STATE_REJECTED) ctch(value);
 		}, defaultCatch);
-	}
-
-	once(onFulfilled, onRejected) {
-		if(typeof onFulfilled !== 'function' && typeof onRejected !== 'function') {
-			required('then', 'requires either onFulfilled or onRejected');
-		}
-
-		if(typeof onFulfilled !== 'function') onFulfilled = () => {};
-		if(typeof onRejected !== 'function') onRejected = () => {};
-
-		Object.defineProperty(onFulfilled, '__ONCE', {
-			configurable: true,
-			writable: false,
-			enumerable: false,
-			value: true
-		});
-
-		return this.then(onFulfilled, onRejected);
 	}
 
 	catch(onRejected = required('catch', 'onRejected')) {

@@ -1,3 +1,4 @@
+import PromiseAccessory from './Accessories.js';
 import MutablePromise from './MutablePromise';
 import KeyValueSet from './KeyValueSet';
 
@@ -9,7 +10,7 @@ export default class Dispatcher {
 
 		Private.set(this, {
 			defaultCatch,
-			engine: promiseEngine || MutablePromise,
+			engine: promiseEngine || PromiseAccessory,
 			promises: new KeyValueSet(),
 			resolvers: new KeyValueSet()
 		});
