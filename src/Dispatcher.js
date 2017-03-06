@@ -65,7 +65,14 @@ export default class Dispatcher {
 						"reject": reject,
 						"unresolve": unresolve
 					});
-				}, defaultCatch || ((e) => this.log(['ERROR', e.stack || e.message || e || 'An Unknown Error Occurred' ]))
+				}, defaultCatch || (
+					(e) => this.log(['ERROR',
+						e ?
+							e.stack || e.message || e
+						:
+							'An Unknown Error Occurred'
+					])
+				)
 			)
 		);
 	}
