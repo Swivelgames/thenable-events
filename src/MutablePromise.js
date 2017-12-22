@@ -25,7 +25,7 @@ export default class MutablePromise {
 			thens: [],
 			catchs: [],
 			unsetters: [],
-			defaultCatch: defaultCatch,
+			defaultCatch,
 			valueType: STATE_INITIAL,
 			value: void 0
 		};
