@@ -1,6 +1,6 @@
 {
   "name": "thenable-events",
-  "version": "0.1.3",
+  "version": "0.0.6-0",
   "description": "Promise-like events",
   "main": "./lib/index.js",
   "directories": {
@@ -8,9 +8,12 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "babel-cli": "^6.18.0",
-    "babel-core": "^6.18.2",
-    "babel-preset-es2015": "^6.18.0"
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-plugin-transform-es2015-destructuring": "^6.23.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-es2017": "^6.18.0"
   },
   "scripts": {
     "build": "babel src --out-dir lib",
@@ -31,9 +34,7 @@
     "once"
   ],
   "author": "Joseph Dalrymple <me@swivel.in>",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Swivelgames/thenable-events/issues"
-  },
+  "license": "AGPLv3",
+  "bugs": "https://github.com/Swivelgames/thenable-events/issues",
   "homepage": "https://github.com/Swivelgames/thenable-events#readme"
 }
