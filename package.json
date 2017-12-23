@@ -20,7 +20,8 @@
   },
   "scripts": {
     "build": "babel src --out-dir lib",
-    "prepublish": "npm run build"
+    "prepublish": "yarn build",
+    "test": "yarn build && mocha lib/tests"
   },
   "repository": {
     "type": "git",
