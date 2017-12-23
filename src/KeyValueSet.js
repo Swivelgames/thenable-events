@@ -3,6 +3,8 @@ const kvps = new WeakMap();
 
 export default class KeyValueSet {
 	constructor(kvp) {
+		console.error("DEPRECATED: KeyValueSet will be removed from `thenable-events` in future releases in favor of NamespacedKeyValueSet");
+
 		kvps.set(this, {});
 
 		Object.defineProperty(this, 'length', {
