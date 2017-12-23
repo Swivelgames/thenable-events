@@ -76,7 +76,7 @@ export default class Dispatcher {
 						"unresolve": unresolve
 					});
 				}, defaultCatch || ((e) => {
-					const msg = `UnhandledPromiseRejectionWarning${"\n"}${e ? e.stack || e.message || e || UNKNOWN_ERROR : UKNOWN_ERROR}`;
+					const msg = `UnhandledPromiseRejectionWarning${"\n"}${e ? e.stack || e.message || e || UNKNOWN_ERROR : UNKNOWN_ERROR}`;
 					this.log(['ERROR',msg]);
 					throw new Error(msg);
 				})
