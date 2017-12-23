@@ -2,7 +2,7 @@ const EMPTY_PARAM = 'EMPTY_PARAM';
 const kvps = new WeakMap();
 
 const getKeysForNamespace = (key, setInst) => {
-	if (!key || !set) return [];
+	if (!key || !setInst) return [];
 	const set = setInst instanceof NamespacedKeyValueSet ? kvps.get(setInst) : setInst;
 	const spaces = key.split('.');
 	return Object.keys(set).filter(k =>
