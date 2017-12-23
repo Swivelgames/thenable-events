@@ -1,10 +1,5 @@
 import Dispatcher from './Dispatcher';
-import KeyValueSet from './KeyValueSet';
-import MutablePromise from './MutablePromise';
-
-export {
-	Dispatcher as default,
-	Dispatcher as Dispatcher,
-	KeyValueSet as KeyValueSet,
-	MutablePromise as MutablePromise
-};
+export { default as MutablePromise } from './MutablePromise';
+export { default as KeyValueSet } from './KeyValueSet';
+export { default as NamespacedKeyValueSet } from './NamespacedKeyValueSet';
+export { Dispatcher as default, Dispatcher };

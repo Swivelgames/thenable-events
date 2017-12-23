@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import Dispatcher from '../Dispatcher';
+import Dispatcher from '../index.js';
 
 const RESOLVED_BEFORE = 'RESOLVED_BEFORE';
 const RESOLVED_AFTER = 'RESOLVED_AFTER';
