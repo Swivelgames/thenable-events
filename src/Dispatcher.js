@@ -55,8 +55,8 @@ export default class Dispatcher {
 		return resolvers.getLike(eventName);
 	}
 
-	forEachResolvers(eventName, fn) {
-		this.log(`forEachResolvers(${eventName}, ${fn ? 'fn': 'undefined'})`, this.LOG_DEBUG);
+	forEachResolver(eventName, fn) {
+		this.log(`forEachResolver(${eventName}, ${fn ? 'fn': 'undefined'})`, this.LOG_DEBUG);
 		const { resolvers } = Private.get(this);
 		if(!resolvers.hasLike(eventName)) this.createPromiseFor(eventName);
 		return resolvers.forEachLike(eventName, fn);
