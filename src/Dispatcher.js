@@ -1,5 +1,5 @@
 import MutablePromise from './MutablePromise';
-import KeyValueSet from './KeyValueSet';
+import NamespacedKeyValueSet from './NamespacedKeyValueSet';
 
 const Private = new WeakMap();
 
@@ -10,8 +10,8 @@ export default class Dispatcher {
 		Private.set(this, {
 			defaultCatch,
 			engine: promiseEngine || MutablePromise,
-			promises: new KeyValueSet(),
-			resolvers: new KeyValueSet()
+			promises: new NamespacedKeyValueSet(),
+			resolvers: new NamespacedKeyValueSet()
 		});
 	}
 
@@ -25,18 +25,19 @@ export default class Dispatcher {
 
 	resolve(eventName, val) {
 		this.log(`resolve(${eventName})`, this.LOG_LOUD);
-		this.getResolver(eventName).resolve(val);
+		this.forEachResolver(eventName, p => p.resolve(val));
 	}
 
 	reject(eventName, val) {
 		this.log(`reject(${eventName})`, this.LOG_LOUD);
-		this.getResolver(eventName).reject(val);
+		this.forEachResolver(eventName, p => p.reject(val));
 	}
 
 	unresolve(eventName) {
 		this.log(`unresolve(${eventName})`, this.LOG_LOUD);
-		let ur = this.getResolver(eventName).unresolve;
-		if(ur && typeof ur === "function") ur();
+		this.getResolver(eventName).filter(
+			p => typeof p.unresolve === 'function'
+		).forEach(p => p.unresolve());
 	}
 
 	getPromise(eventName, ifNotCreate = true) {
@@ -50,8 +51,15 @@ export default class Dispatcher {
 	getResolver(eventName) {
 		this.log(`getResolver(${eventName})`, this.LOG_DEBUG);
 		const { resolvers } = Private.get(this);
-		if(!resolvers.has(eventName)) this.createPromiseFor(eventName);
-		return resolvers.get(eventName);
+		if(!resolvers.hasLike(eventName)) this.createPromiseFor(eventName);
+		return resolvers.getLike(eventName);
+	}
+
+	forEachResolvers(eventName, fn) {
+		this.log(`forEachResolvers(${eventName}, ${fn ? 'fn': 'undefined'})`, this.LOG_DEBUG);
+		const { resolvers } = Private.get(this);
+		if(!resolvers.hasLike(eventName)) this.createPromiseFor(eventName);
+		return resolvers.forEachLike(eventName, fn);
 	}
 
 	createPromiseFor(eventName) {
