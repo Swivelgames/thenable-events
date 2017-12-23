@@ -1,6 +1,8 @@
 import MutablePromise from './MutablePromise';
 import NamespacedKeyValueSet from './NamespacedKeyValueSet';
 
+const UNKNOWN_ERROR = 'An Unknown Error Occurred';
+
 const Private = new WeakMap();
 
 export default class Dispatcher {
@@ -73,14 +75,11 @@ export default class Dispatcher {
 						"reject": reject,
 						"unresolve": unresolve
 					});
-				}, defaultCatch || (
-					(e) => this.log(['ERROR',
-						e ?
-							e.stack || e.message || e
-						:
-							'An Unknown Error Occurred'
-					])
-				)
+				}, defaultCatch || ((e) => {
+					const msg = `UnhandledPromiseRejectionWarning${"\n"}${e ? e.stack || e.message || e || UNKNOWN_ERROR : UKNOWN_ERROR}`;
+					this.log(['ERROR',msg]);
+					throw new Error(msg);
+				})
 			)
 		);
 	}
