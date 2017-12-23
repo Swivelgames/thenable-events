@@ -8,7 +8,7 @@ const REJECTED = 'REJECTED';
 const Disp = new Dispatcher(void 0, void 0, () => {});
 
 describe('Dispatcher', () => {
-	describe('#when()', () => {
+	describe('.when()', () => {
 		it('should throw an error if there are too many parameters', () => {
 			try {
 				Disp.when(EVENT_NAME, () => {});
@@ -16,7 +16,7 @@ describe('Dispatcher', () => {
 			throw new Error('NO ERROR THROWN');
 		});
 
-		describe('#then( onFulfilled )', () => {
+		describe('.then( onFulfilled )', () => {
 			const resolutions = [];
 			const EVENT_NAME = 'traditional_promise-like';
 			Disp.resolve(EVENT_NAME, RESOLVED_BEFORE);
@@ -42,7 +42,7 @@ describe('Dispatcher', () => {
 				throw new Error('NO ERROR THROWN');
 			});
 
-			describe('#catch()', () => {
+			describe('.catch()', () => {
 				const resolutionCatch = [];
 				const resolutionThen = [];
 
@@ -68,7 +68,7 @@ describe('Dispatcher', () => {
 			});
 		});
 
-		describe('#once( onFulfilled )', () => {
+		describe('.once( onFulfilled )', () => {
 			const resolutionsFirst = [];
 			const resolutionsSecond = [];
 
@@ -100,7 +100,7 @@ describe('Dispatcher', () => {
 			});
 		});
 
-		describe('#catch()', () => {
+		describe('.catch()', () => {
 			const resolutionCatch = [];
 			const resolutionThen = [];
 			const resolutionRecover = [];
