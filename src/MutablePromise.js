@@ -9,7 +9,7 @@ function resolverFunc(val, type) {
 	const cbs = priv[`${type}s`];
 	priv.value = val;
 	priv.valueType = type;
-	cbs.forEach(v => setTimeout( () => v(val), 0));
+	cbs.forEach(v => v(val));
 };
 
 export default class MutablePromise {
@@ -38,7 +38,7 @@ export default class MutablePromise {
 
 		if(fn instanceof MutablePromise
 		|| Promise && Promise.prototype && fn instanceof Promise) {
-			fn.then(priv.resolve, priv.reject);
+			fn.then(resolve, reject);
 		} else fn(resolve, reject, unset);
 	}
 
@@ -71,7 +71,7 @@ export default class MutablePromise {
 
 			const ctch = (v) => {
 				try {
-					return rej(onRejected(v));
+					return res(onRejected(v));
 				} catch(e) {
 					rej(e);
 				} finally { once(); }
