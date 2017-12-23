@@ -16,28 +16,34 @@ describe('Dispatcher', () => {
 			throw new Error('NO ERROR THROWN');
 		});
 
-		describe('.then( onFulfilled )', () => {
-			const resolutions = [];
+		describe('.then( onFulfilled, onRejected )', () => {
+			const resolutionThen = [];
+			const resolutionCatch = [];
 			const EVENT_NAME = 'traditional_promise-like';
 			Disp.resolve(EVENT_NAME, RESOLVED_BEFORE);
-			Disp.when(EVENT_NAME).then((v) => { resolutions.push(v); });
+			Disp.when(EVENT_NAME).then(
+				(v) => { resolutionThen.push(v); },
+				(v) => { resolutionCatch.push(v); }
+			);
 			Disp.resolve(EVENT_NAME, RESOLVED_AFTER);
+			Disp.reject(EVENT_NAME, REJECTED);
+			Disp.when(EVENT_NAME).then(void 0, (v) => { resolutionCatch.push(v); });
 
-			it('should only fulfill twice', () => {
-				expect(resolutions).to.have.length(2);
+			it('should execute `onFulfilled` once if already resolved and once for every subsequent resolve', () => {
+				expect(resolutionThen).to.have.length(2);
+				expect(resolutionThen[0]).to.equal(RESOLVED_BEFORE);
+				expect(resolutionThen[1]).to.equal(RESOLVED_AFTER);
 			});
 
-			it('should fulfill when promise is already resolved', () => {
-				expect(resolutions[0]).to.equal(RESOLVED_BEFORE);
-			});
-
-			it('should fulfill when promise a second time', () => {
-				expect(resolutions[1]).to.equal(RESOLVED_AFTER);
+			it('should execute `onRejected` once if promise is already rejected and once for every subsequent reject', () => {
+				expect(resolutionCatch).to.have.length(2);
+				expect(resolutionCatch[0]).to.equal(REJECTED);
+				expect(resolutionCatch[1]).to.equal(REJECTED);
 			});
 
 			it('should throw an error if there are missing parameters', () => {
 				try {
-					Disp.when(EVENT_NAME).then();
+					Disp.when(EVENT_NAME).catch();
 				} catch(e) { return; }
 				throw new Error('NO ERROR THROWN');
 			});
