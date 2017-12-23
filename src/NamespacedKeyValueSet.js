@@ -55,7 +55,7 @@ export default class NamespacedKeyValueSet {
 
 	getLike(key) { return getKeysForNamespace(key, this).reduce((r,k) => ({ ...r, [k]: this.get(k) }), {}); }
 	setLike(key, value) { return getKeysForNamespace(key, this).map(k => this.setLike(key, value)), value; }
-	hasLike(key, kvp = kvps.get(this)) { return getKeysForNamespace(key, this).length > 0; }
+	hasLike(key) { return getKeysForNamespace(key, this).length > 0; }
 	deleteLike(key) { return getKeysForNamespace(key, this).map(k => this.delete(key)), true; }
-	forEachLike(key, callback, context) { this.forEachLike(callback, context, getKeysForNamespace(key, this)); }
+	forEachLike(key, callback, context) { this.forEach(callback, context, getKeysForNamespace(key, this)); }
 }
