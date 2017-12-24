@@ -13,6 +13,22 @@ Powerful event-based system that introduces thenable objects to enable promise-l
 * Implements `thenables` compatible with Promises/A+ spec
 * Namespaced events work out of the box
 
+# Quick Start
+
+Install:
+```shell
+$ yarn add thenable-events
+```
+
+Use:
+```javascript
+import Dispatcher from 'thenable-events';
+const EventDispatcher = new Dispatcher();
+EventDispatcher.when('eventName').then(val => console.log(val));
+EventDispatcher.resolve('eventName', 'Foobar!');
+// Console> 'Foobar!'
+```
+
 ## Usage Examples
 
 ### Dispatching Events
@@ -26,7 +42,9 @@ myObservable.on('eventName', () => console.log('Foobar!'));
 While `thenable-events` employs a promise-like structure that is compatible with Promises/A+ implementations:
 
 ```javascript
-Dispatcher.when('eventName').then(() => console.log('Foobar!'));
+import Dispatcher from 'thenable-events';
+const EventDispatcher = new Dispatcher();
+EventDispatcher.when('eventName').then(() => console.log('Foobar!'));
 ```
 
 ### Handling API Responses
@@ -39,21 +57,23 @@ Here's an example using `axios` for an API call:
 import axios from 'axios';
 import Dispatcher from 'thenable-events';
 
+const EventDispatcher = new Dispatcher();
+
 const getData = () =>
 	axios.get('/svcs/myendpoint').then(
 		(res) => {
-			Dispatcher.resolve('api.myendpoint', res.body);
+			EventDispatcher.resolve('api.myendpoint', res.body);
 			return res;
 		},
 		(err) => {
-			Dispatcher.reject('api.myendpoint', err);
+			EventDispatcher.reject('api.myendpoint', err);
 			throw err;
 		}
 	);
 
 // ...
 
-Dispatcher.when('api.myendpoint')
+EventDispatcher.when('api.myendpoint')
 	.then(body => JSON.parse(body))
 	.then(json => console.log({ json }))
 	.catch(err => console.error(err));
@@ -66,11 +86,11 @@ Support for namespaced event-names works out of the box, enabling handling of a 
 ```javascript
 const getData = () =>
 	// ...
-		Dispatcher.reject('api.myendpoint', err);
+		EventDispatcher.reject('api.myendpoint', err);
 	// ...
 
 // Catches all rejected events under 'api.myendpoint.*'
-Dispatcher.when('api.*')
+EventDispatcher.when('api.*')
 	.catch(err => {
 		console.error('Catch-all for All API Errors', err);
 	});
@@ -112,7 +132,7 @@ myObservable.on('api.myendpoint', (data) => {
 
 **New**
 ```javascript
-Dispatcher.when('api.myendpoint')
+EventDispatcher.when('api.myendpoint')
     .then(body => JSON.parse(body))
     .then(json => console.log({ json }))
     .catch(err => console.error(err));
