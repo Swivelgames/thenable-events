@@ -1,6 +1,6 @@
 {
   "name": "thenable-events",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Powerful event-based system that introduces thenable objects to enable promise-like event handling",
   "main": "./lib/index.js",
   "dependencies": {
