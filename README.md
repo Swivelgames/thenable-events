@@ -1,2 +1,119 @@
-# thenable-events
-Event emitter that incorporates thenable interfaces
+# `thenable-events` v2
+Powerful event-based system that introduces thenable objects to enable promise-like event handling
+
+#### Version 2 is here!
+* Improved compatibility with `thenable` definition in Promises/A+ spec
+* Introduction of Namespaced events
+* *Contributors: Introduction of proper `mocha` and `chai` tests*
+
+## Powerful Features
+
+* Dispatch events
+* Handle success and error events using promise-like syntax
+* Implements `thenables` compatible with Promises/A+ spec
+* Namespaced events work out of the box
+
+## Usage Examples
+
+### Dispatching Events
+
+Traditional event-based systems combine the antiquated `callback` structure in order to handle events:
+
+```javascript
+myObservable.on('eventName', () => console.log('Foobar!'));
+```
+
+While `thenable-events` employs a promise-like structure that is compatible with Promises/A+ implementations:
+
+```javascript
+Dispatcher.when('eventName').then(() => console.log('Foobar!'));
+```
+
+### Handling API Responses
+
+Because of these improvements, we can use the power of chaining in a promise-like structure with event-based syntax where ***the chain is resolved every time an event is fired***.
+
+Here's an example using `axios` for an API call:
+
+```javascript
+import axios from 'axios';
+import Dispatcher from 'thenable-events';
+
+const getData = () =>
+	axios.get('/my/data/endpoint').then(
+		(res) => {
+			Dispatcher.resolve('apicalls.data.foo', res.body);
+			return res;
+		},
+		(err) => {
+			Dispatcher.reject('apicalls.data.foo', err);
+			throw err;
+		}
+	);
+
+// ...
+
+Dispatcher.when('apicalls.data.foo')
+	.then(body => JSON.parse(body))
+	.then(json => console.log({ json }))
+	.catch(err => console.error(err));
+```
+
+### Support for Namespaced Event-Names
+
+Support for namespaced event-names works out of the box, enabling handling of a wide-range of events within a single line:
+
+```javascript
+const getData = () =>
+	// ...
+		Dispatcher.reject('apicalls.data.foo', err);
+	// ...
+
+// Catches all rejected events under 'apicalls.*'
+Dispatcher.when('apicalls')
+	.catch(err => {
+		console.error('General API Call Error', err);
+	});
+```
+
+## Concepts
+
+With the promises becoming more ubiquitous due to their powerful structure, `thenable-events` employs `thenable` objects (as defined in Promises/A+) with interfaces very similar to Promises.
+
+### Promises/A+ Compatibility
+
+The power of `thenable-events` is the similarity in the way that the `then` interface is implemented. The interface is entirely compatible with traditional Promise/A+ implementations. However, the real power comes from the ability to use promise-like syntax (thenable) within an event-based structure.
+
+So what are the true differences?
+
+It's quite simple, really:
+
+* `thenable-events` resolves each `then` chain every time an event is `resolved` or `rejected`
+
+This is the only limitation with Promises being assimilated in a proper event-based architecture without the need for callbacks.
+
+This issue is solved with `thenable-events`:
+
+#### Old versus New
+
+**Old**
+```javascript
+myObservable.on('apicalls.data.foo', (data) => {
+	let json;
+	try {
+		json = JSON.parse(data);
+	} catch(e) {
+		console.error(err);
+		return;
+	}
+	console.log({ json });
+});
+```
+
+**New**
+```javascript
+Dispatcher.when('apicalls.data.foo')
+    .then(body => JSON.parse(body))
+    .then(json => console.log({ json }))
+    .catch(err => console.error(err));
+```
