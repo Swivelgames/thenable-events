@@ -4,6 +4,8 @@ const Private = new WeakMap();
 
 const required = (method, paramName) => { throw new Error(`MutablePromise.${method}(): missing required parameter: ${paramName}`) }
 
+const isThenable = p => p && typeof p.then === 'function' && typeof p.catch === 'function'
+
 function resolverFunc(val, type) {
 	const priv = Private.get(this);
 	const cbs = priv[`${type}s`];
@@ -15,8 +17,8 @@ function resolverFunc(val, type) {
 export default class MutablePromise {
 	constructor(fn = () => {}, defaultCatch) {
 		const priv = {
-			resolve: (v) => resolverFunc.call(this, v, STATE_FULFILLED),
-			reject: (e) => resolverFunc.call(this, e, STATE_REJECTED),
+			resolve: v => resolverFunc.call(this, v, STATE_FULFILLED),
+			reject: e => resolverFunc.call(this, e, STATE_REJECTED),
 			unset: () => {
 				const priv = Private.get(this);
 				priv.value = priv.valueType = STATE_INITIAL;
@@ -36,10 +38,11 @@ export default class MutablePromise {
 
 		Private.set(this, priv);
 
-		if(fn instanceof MutablePromise
-		|| Promise && Promise.prototype && fn instanceof Promise) {
+		if(isThenable(fn)) {
 			fn.then(resolve, reject);
-		} else fn(resolve, reject, unset);
+		} else {
+			fn(resolve, reject, unset);
+		}
 	}
 
 	then(onFulfilled, onRejected) {
@@ -61,27 +64,26 @@ export default class MutablePromise {
 				valueType
 			} = Private.get(this);
 
-			const thn = (v) => {
+			const exec = (v, bias) => {
 				try {
-					return res(onFulfilled(v));
+					const ret = (bias !== rej) ? onFulfilled(v) : onRejected(v);
+					if (typeof ret === 'undefined') return bias();
+					if (!isThenable(ret)) return res(ret);
+					ret.then(v => res(v)).catch(e => rej(e));
 				} catch(e) {
-					onRejected(e); rej(e);
-				} finally { once(); }
-			};
-
-			const ctch = (v) => {
-				try {
-					return res(onRejected(v));
-				} catch(e) {
+					if (bias !== rej) onRejected(e);
 					rej(e);
 				} finally { once(); }
 			};
+
+			const thn = v => exec(v, res);
+			const ctch = v => exec(v, rej);
 
 			thens.push( thn );
 			catchs.push( ctch );
 			unsetters.push( (v) => un() );
 
-			function once(){
+			function once() {
 				if(onFulfilled.__ONCE) {
 					const tidx = thens.indexOf(thn);
 					if(tidx > -1) thens.splice(tidx,1);
@@ -117,6 +119,6 @@ export default class MutablePromise {
 	}
 
 	catch(onRejected = required('catch', 'onRejected')) {
-		return this.then(() => {}, onRejected);
+		return this.then(v => v, onRejected);
 	}
 }
