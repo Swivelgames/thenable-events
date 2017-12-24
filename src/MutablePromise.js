@@ -1,5 +1,8 @@
 const [ STATE_INITIAL, STATE_REJECTED, STATE_FULFILLED, EMPTY_ARG ] = [ void 0, 'catch', 'then', 'EMPTY_ARG' ];
 
+const defaultFulfilled = a => a;
+const defaultRejected = a => { throw a };
+
 const Private = new WeakMap();
 
 const required = (method, paramName) => { throw new Error(`MutablePromise.${method}(): missing required parameter: ${paramName}`) }
@@ -50,8 +53,8 @@ export default class MutablePromise {
 			required('then', 'requires either onFulfilled or onRejected');
 		}
 
-		if(typeof onFulfilled !== 'function') onFulfilled = () => {};
-		if(typeof onRejected !== 'function') onRejected = () => {};
+		if(typeof onFulfilled !== 'function') onFulfilled = defaultFulfilled;
+		if(typeof onRejected !== 'function') onRejected = defaultRejected;
 
 		const { defaultCatch } = Private.get(this);
 
@@ -69,7 +72,10 @@ export default class MutablePromise {
 					const ret = (bias !== rej) ? onFulfilled(v) : onRejected(v);
 					if (typeof ret === 'undefined') return bias();
 					if (!isThenable(ret)) return res(ret);
-					ret.then(v => res(v)).catch(e => rej(e));
+					if (ret === this) {
+						throw new TypeError('Promise cannot be resolved with itself');
+					}
+					ret.then(v => res(v), e => rej(e));
 				} catch(e) {
 					if (bias !== rej) onRejected(e);
 					rej(e);
@@ -79,9 +85,9 @@ export default class MutablePromise {
 			const thn = v => exec(v, res);
 			const ctch = v => exec(v, rej);
 
-			thens.push( thn );
-			catchs.push( ctch );
-			unsetters.push( (v) => un() );
+			thens.push(thn);
+			catchs.push(ctch);
+			unsetters.push(() => un());
 
 			function once() {
 				if(onFulfilled.__ONCE) {
@@ -105,8 +111,8 @@ export default class MutablePromise {
 			required('then', 'requires either onFulfilled or onRejected');
 		}
 
-		if(typeof onFulfilled !== 'function') onFulfilled = () => {};
-		if(typeof onRejected !== 'function') onRejected = () => {};
+		if(typeof onFulfilled !== 'function') onFulfilled = defaultFulfilled;
+		if(typeof onRejected !== 'function') onRejected = defaultRejected;
 
 		Object.defineProperty(onFulfilled, '__ONCE', {
 			configurable: true,
@@ -119,6 +125,6 @@ export default class MutablePromise {
 	}
 
 	catch(onRejected = required('catch', 'onRejected')) {
-		return this.then(v => v, onRejected);
+		return this.then(defaultFulfilled, onRejected);
 	}
 }
