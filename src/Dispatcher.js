@@ -1,4 +1,4 @@
-import MutablePromise from './MutablePromise';
+import MutableThenable from './MutableThenable';
 import NamespacedKeyValueSet from './NamespacedKeyValueSet';
 
 const UNKNOWN_ERROR = 'An Unknown Error Occurred';
@@ -11,7 +11,7 @@ export default class Dispatcher {
 
 		Private.set(this, {
 			defaultCatch,
-			engine: promiseEngine || MutablePromise,
+			engine: promiseEngine || MutableThenable,
 			promises: new NamespacedKeyValueSet(),
 			resolvers: new NamespacedKeyValueSet()
 		});

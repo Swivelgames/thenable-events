@@ -5,7 +5,7 @@ const defaultRejected = a => { throw a };
 
 const Private = new WeakMap();
 
-const required = (method, paramName) => { throw new Error(`MutablePromise.${method}(): missing required parameter: ${paramName}`) }
+const required = (method, paramName) => { throw new Error(`MutableThenable.${method}(): missing required parameter: ${paramName}`) }
 
 const isThenable = p => p && typeof p.then === 'function' && typeof p.catch === 'function'
 
@@ -17,7 +17,7 @@ function resolverFunc(val, type) {
 	cbs.forEach(v => v(val));
 };
 
-export default class MutablePromise {
+export default class MutableThenable {
 	constructor(fn = () => {}, defaultCatch) {
 		const priv = {
 			resolve: v => resolverFunc.call(this, v, STATE_FULFILLED),
@@ -58,7 +58,7 @@ export default class MutablePromise {
 
 		const { defaultCatch } = Private.get(this);
 
-		return new MutablePromise( (res, rej, un) => {
+		return new MutableThenable( (res, rej, un) => {
 			const {
 				thens,
 				catchs,
