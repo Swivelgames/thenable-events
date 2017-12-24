@@ -17,9 +17,15 @@ describe('Dispatcher', () => {
 		});
 
 		describe('.then( onFulfilled, onRejected )', () => {
+			const VAL_A = 'VAL_A';
+			const VAL_B = 'VAL_B';
+			const VAL_C = 'VAL_C';
+			const VAL_D = 'VAL_D';
+
 			const resolutionThen = [];
 			const resolutionCatch = [];
 			const naturalPromises = [];
+			const resolvedVals = [];
 
 			const EVENT_NAME = 'traditional_promise-like';
 
@@ -35,6 +41,14 @@ describe('Dispatcher', () => {
 			)
 
 			Disp.resolve(EVENT_NAME, RESOLVED_AFTER);
+
+			Disp.when(EVENT_NAME)
+				.then(() => { return VAL_A; })
+				.then((v) => { resolvedVals.push(v); return VAL_B; })
+				.then((v) => { resolvedVals.push(v); return VAL_C; })
+				.then((v) => { resolvedVals.push(v); return VAL_D; })
+				.then((v) => { resolvedVals.push(v); })
+
 			Disp.reject(EVENT_NAME, REJECTED);
 
 			Disp.when(EVENT_NAME).then(void 0, (v) => { resolutionCatch.push(v); });
@@ -55,6 +69,12 @@ describe('Dispatcher', () => {
 				expect(naturalPromises).to.have.length(2);
 				expect(naturalPromises[0]).to.equal('NATURAL');
 				expect(naturalPromises[1]).to.equal('NATURAL');
+			});
+
+			it('should return properly chainable `thenables`', () => {
+				expect(resolvedVals).to.have.length(4);
+				expect(resolvedVals[0]).to.equal(VAL_A);
+				expect(resolvedVals[3]).to.equal(VAL_D);
 			});
 
 			it('should throw an error if there are missing parameters', () => {
