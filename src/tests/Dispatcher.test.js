@@ -141,4 +141,44 @@ describe('Dispatcher', () => {
 			});
 		});
 	});
+
+	describe('.resolve', () => {
+		const resolutionThen = [];
+
+		const EVENT_NAMES = 'foo.bar.baz.quux'.split('.');
+		const LEN = EVENT_NAMES.length;
+
+		for(let i=0; i<LEN; i++) {
+			Disp.when(EVENT_NAMES.slice(0,i+1).join('.'))
+				.then((v) => { resolutionThen.push(v); });
+		}
+
+		Disp.resolve(EVENT_NAMES.join('.'), RESOLVED_AFTER);
+
+		it(`should resolve all ${LEN} thens including those in lower namespaces`, () => {
+			expect(resolutionThen).to.have.length(LEN);
+			expect(resolutionThen[0]).to.equal(RESOLVED_AFTER);
+			expect(resolutionThen[LEN-1]).to.equal(RESOLVED_AFTER);
+		})
+	});
+
+	describe('.reject', () => {
+		const resolutionThen = [];
+
+		const EVENT_NAMES = 'foo.bar.baz.quux'.split('.');
+		const LEN = EVENT_NAMES.length;
+
+		for(let i=0;i<LEN;i++) {
+			Disp.when(EVENT_NAMES.slice(0,i+1).join('.'))
+				.catch((v) => { resolutionThen.push(v); });
+		}
+
+		Disp.reject(EVENT_NAMES.join('.'), REJECTED);
+
+		it(`should reject all ${LEN} catchs including those in lower namespaces`, () => {
+			expect(resolutionThen).to.have.length(LEN);
+			expect(resolutionThen[0]).to.equal(REJECTED);
+			expect(resolutionThen[LEN-1]).to.equal(REJECTED);
+		})
+	});
 });
