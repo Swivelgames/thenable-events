@@ -6,7 +6,8 @@ const getKeysForNamespace = (key, setInst) => {
 	const set = setInst instanceof NamespacedKeyValueSet ? kvps.get(setInst) : setInst;
 	const spaces = key.split('.');
 	return Object.keys(set).filter(k =>
-		key.split('.').slice(0, k.split('.').length).join('.') === k
+		k === key ||
+		`${key.split('.').slice(0, k.split('.').length - 1).join('.')}.*` === k
 	);
 };
 

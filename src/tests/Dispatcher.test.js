@@ -180,41 +180,57 @@ describe('Dispatcher', () => {
 
 	describe('.resolve', () => {
 		const resolutionThen = [];
+		const illegalResolutions = [];
 
 		const EVENT_NAMES = 'foo.bar.baz.quux'.split('.');
 		const LEN = EVENT_NAMES.length;
 
 		for(let i=0; i<LEN; i++) {
-			Disp.when(EVENT_NAMES.slice(0,i+1).join('.'))
+			Disp.when(`${EVENT_NAMES.slice(0,i+1).join('.')}.*`)
 				.then((v) => { resolutionThen.push(v); });
+			Disp.when(`${EVENT_NAMES.slice(0,i+1).join('.')}`)
+				.then((v) => { illegalResolutions.push(v); });
 		}
 
-		Disp.resolve(EVENT_NAMES.join('.'), RESOLVED_AFTER);
+		Disp.resolve(EVENT_NAMES.slice(0,LEN-1).join('.'), RESOLVED_AFTER);
 
-		it(`should resolve all ${LEN} thens including those in lower namespaces`, () => {
-			expect(resolutionThen).to.have.length(LEN);
+		it(`should resolve all ${LEN-1} thens including those in lower namespaces, excluding those in higher namespaces`, () => {
+			expect(resolutionThen).to.have.length(LEN-1);
 			expect(resolutionThen[0]).to.equal(RESOLVED_AFTER);
-			expect(resolutionThen[LEN-1]).to.equal(RESOLVED_AFTER);
+			expect(resolutionThen[LEN-2]).to.equal(RESOLVED_AFTER);
+		});
+
+		it(`should not resolve absolute thens in lower namespaces`, () => {
+			expect(illegalResolutions).to.have.length(1);
+			expect(illegalResolutions[0]).to.equal(RESOLVED_AFTER);
 		});
 	});
 
 	describe('.reject', () => {
 		const resolutionThen = [];
+		const illegalResolutionsCatch = [];
 
 		const EVENT_NAMES = 'foo.bar.baz.quux'.split('.');
 		const LEN = EVENT_NAMES.length;
 
 		for(let i=0;i<LEN;i++) {
-			Disp.when(EVENT_NAMES.slice(0,i+1).join('.'))
+			Disp.when(`${EVENT_NAMES.slice(0,i+1).join('.')}.*`)
 				.catch((v) => { resolutionThen.push(v); });
+			Disp.when(`${EVENT_NAMES.slice(0,i+1).join('.')}`)
+				.catch((v) => { illegalResolutionsCatch.push(v); });
 		}
 
-		Disp.reject(EVENT_NAMES.join('.'), REJECTED);
+		Disp.reject(EVENT_NAMES.slice(0,LEN-1).join('.'), REJECTED);
 
-		it(`should reject all ${LEN} catchs including those in lower namespaces`, () => {
-			expect(resolutionThen).to.have.length(LEN);
+		it(`should reject all ${LEN-1} catchs including those in lower namespaces, excluding those in higher namespaces`, () => {
+			expect(resolutionThen).to.have.length(LEN-1);
 			expect(resolutionThen[0]).to.equal(REJECTED);
-			expect(resolutionThen[LEN-1]).to.equal(REJECTED);
+			expect(resolutionThen[LEN-2]).to.equal(REJECTED);
+		});
+
+		it(`should not reject absolute catchs in lower namespaces`, () => {
+			expect(illegalResolutionsCatch).to.have.length(1);
+			expect(illegalResolutionsCatch[0]).to.equal(REJECTED);
 		});
 	});
 });
