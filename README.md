@@ -40,20 +40,20 @@ import axios from 'axios';
 import Dispatcher from 'thenable-events';
 
 const getData = () =>
-	axios.get('/my/data/endpoint').then(
+	axios.get('/svcs/myendpoint').then(
 		(res) => {
-			Dispatcher.resolve('apicalls.data.foo', res.body);
+			Dispatcher.resolve('api.myendpoint', res.body);
 			return res;
 		},
 		(err) => {
-			Dispatcher.reject('apicalls.data.foo', err);
+			Dispatcher.reject('api.myendpoint', err);
 			throw err;
 		}
 	);
 
 // ...
 
-Dispatcher.when('apicalls.data.foo')
+Dispatcher.when('api.myendpoint')
 	.then(body => JSON.parse(body))
 	.then(json => console.log({ json }))
 	.catch(err => console.error(err));
@@ -66,13 +66,13 @@ Support for namespaced event-names works out of the box, enabling handling of a 
 ```javascript
 const getData = () =>
 	// ...
-		Dispatcher.reject('apicalls.data.foo', err);
+		Dispatcher.reject('api.myendpoint', err);
 	// ...
 
-// Catches all rejected events under 'apicalls.*'
-Dispatcher.when('apicalls')
+// Catches all rejected events under 'api.myendpoint.*'
+Dispatcher.when('api.*')
 	.catch(err => {
-		console.error('General API Call Error', err);
+		console.error('Catch-all for All API Errors', err);
 	});
 ```
 
@@ -98,7 +98,7 @@ This issue is solved with `thenable-events`:
 
 **Old**
 ```javascript
-myObservable.on('apicalls.data.foo', (data) => {
+myObservable.on('api.myendpoint', (data) => {
 	let json;
 	try {
 		json = JSON.parse(data);
@@ -112,7 +112,7 @@ myObservable.on('apicalls.data.foo', (data) => {
 
 **New**
 ```javascript
-Dispatcher.when('apicalls.data.foo')
+Dispatcher.when('api.myendpoint')
     .then(body => JSON.parse(body))
     .then(json => console.log({ json }))
     .catch(err => console.error(err));
