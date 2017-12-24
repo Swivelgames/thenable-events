@@ -73,7 +73,7 @@ export default class MutableThenable {
 					if (typeof ret === 'undefined') return bias();
 					if (!isThenable(ret)) return res(ret);
 					if (ret === this) {
-						throw new TypeError('Promise cannot be resolved with itself');
+						throw new TypeError('Thenable cannot be resolved with itself');
 					}
 					ret.then(v => res(v), e => rej(e));
 				} catch(e) {

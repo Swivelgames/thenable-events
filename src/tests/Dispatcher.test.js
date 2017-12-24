@@ -27,7 +27,7 @@ describe('Dispatcher', () => {
 			const naturalPromises = [];
 			const resolvedVals = [];
 
-			const EVENT_NAME = 'traditional_promise-like';
+			const EVENT_NAME = 'traditional_thenable-like';
 
 			Disp.resolve(EVENT_NAME, RESOLVED_BEFORE);
 
@@ -59,7 +59,7 @@ describe('Dispatcher', () => {
 				expect(resolutionThen[1]).to.equal(RESOLVED_AFTER);
 			});
 
-			it('should execute `onRejected` once if promise is already rejected and once for every subsequent reject', () => {
+			it('should execute `onRejected` once if thenable is already rejected and once for every subsequent reject', () => {
 				expect(resolutionCatch).to.have.length(2);
 				expect(resolutionCatch[0]).to.equal(REJECTED);
 				expect(resolutionCatch[1]).to.equal(REJECTED);
@@ -98,7 +98,7 @@ describe('Dispatcher', () => {
 					)
 					.catch((e) => { resolutionCatch.push(e); });
 
-				it('should catch when a promise is rejected within a then', () => {
+				it('should catch when a thenable is rejected within a then', () => {
 					expect(resolutionCatch[0]).to.equal(REJECTED);
 					expect(resolutionCatch[1]).to.equal(REJECTED);
 				});
@@ -126,11 +126,11 @@ describe('Dispatcher', () => {
 				expect(resolutionsSecond).to.have.length(1);
 			});
 
-			it('should fulfill when promise is already resolved', () => {
+			it('should fulfill when thenable is already resolved', () => {
 				expect(resolutionsFirst[0]).to.equal(RESOLVED_BEFORE);
 			});
 
-			it('should fulfill when a promise is resolved later', () => {
+			it('should fulfill when a thenable is resolved later', () => {
 				expect(resolutionsSecond[0]).to.equal(RESOLVED_AFTER);
 			});
 
@@ -155,7 +155,7 @@ describe('Dispatcher', () => {
 			Disp.when(EVENT_NAME).then((v) => { resolutionThen.push(v); });
 			Disp.reject(EVENT_NAME, REJECTED);
 
-			it('should catch when a promise is already rejected', () => {
+			it('should catch when a thenable is already rejected', () => {
 				expect(resolutionCatch[0]).to.equal(REJECTED);
 			});
 

@@ -6,13 +6,13 @@ const UNKNOWN_ERROR = 'An Unknown Error Occurred';
 const Private = new WeakMap();
 
 export default class Dispatcher {
-	constructor(promiseEngine, Logger, defaultCatch) {
+	constructor(thenableEngine, Logger, defaultCatch) {
 		if(Logger && Logger.attach) Logger.attach(this, 'dispatcher');
 
 		Private.set(this, {
 			defaultCatch,
-			engine: promiseEngine || MutableThenable,
-			promises: new NamespacedKeyValueSet(),
+			engine: thenableEngine || MutableThenable,
+			thenables: new NamespacedKeyValueSet(),
 			resolvers: new NamespacedKeyValueSet()
 		});
 	}
@@ -22,7 +22,7 @@ export default class Dispatcher {
 			throw new TypeError('when: Only one parameter is allowed. Did you mean to write .when().then()?');
 		}
 		this.log(`when(${eventName})`, this.LOG_LOUD);
-		return this.getPromise(eventName);
+		return this.getThenable(eventName);
 	}
 
 	resolve(eventName, val) {
@@ -42,32 +42,32 @@ export default class Dispatcher {
 		).forEach(p => p.unresolve());
 	}
 
-	getPromise(eventName, ifNotCreate = true) {
-		const { promises } = Private.get(this);
-		this.log(`getPromise(${eventName}, ${ifNotCreate})`, this.LOG_DEBUG);
-		if(promises.has(eventName)) return promises.get(eventName);
-		else if(ifNotCreate === true) return this.createPromiseFor(eventName);
+	getThenable(eventName, ifNotCreate = true) {
+		const { thenables } = Private.get(this);
+		this.log(`getThenable(${eventName}, ${ifNotCreate})`, this.LOG_DEBUG);
+		if(thenables.has(eventName)) return thenables.get(eventName);
+		else if(ifNotCreate === true) return this.createThenableFor(eventName);
 		else return false;
 	}
 
 	getResolver(eventName) {
 		this.log(`getResolver(${eventName})`, this.LOG_DEBUG);
 		const { resolvers } = Private.get(this);
-		if(!resolvers.hasLike(eventName)) this.createPromiseFor(eventName);
+		if(!resolvers.hasLike(eventName)) this.createThenableFor(eventName);
 		return resolvers.getLike(eventName);
 	}
 
 	forEachResolver(eventName, fn) {
 		this.log(`forEachResolver(${eventName}, ${fn ? 'fn': 'undefined'})`, this.LOG_DEBUG);
 		const { resolvers } = Private.get(this);
-		if(!resolvers.hasLike(eventName)) this.createPromiseFor(eventName);
+		if(!resolvers.hasLike(eventName)) this.createThenableFor(eventName);
 		return resolvers.forEachLike(eventName, fn);
 	}
 
-	createPromiseFor(eventName) {
-		this.log(`createPromiseFor(${eventName}) **`, this.LOG_DEBUG);
-		const { promises, engine, resolvers, defaultCatch } = Private.get(this);
-		return promises.set(eventName,
+	createThenableFor(eventName) {
+		this.log(`createThenableFor(${eventName}) **`, this.LOG_DEBUG);
+		const { thenables, engine, resolvers, defaultCatch } = Private.get(this);
+		return thenables.set(eventName,
 			new engine(
 				(resolve, reject, unresolve) => {
 					resolvers.set(eventName, {
@@ -76,7 +76,7 @@ export default class Dispatcher {
 						"unresolve": unresolve
 					});
 				}, defaultCatch || ((e) => {
-					const msg = `UnhandledPromiseRejectionWarning${"\n"}${e ? e.stack || e.message || e || UNKNOWN_ERROR : UNKNOWN_ERROR}`;
+					const msg = `UnhandledThenableRejectionWarning${"\n"}${e ? e.stack || e.message || e || UNKNOWN_ERROR : UNKNOWN_ERROR}`;
 					this.log(['ERROR',msg]);
 					throw new Error(msg);
 				})
