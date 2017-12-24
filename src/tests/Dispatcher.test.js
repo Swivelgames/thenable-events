@@ -19,14 +19,24 @@ describe('Dispatcher', () => {
 		describe('.then( onFulfilled, onRejected )', () => {
 			const resolutionThen = [];
 			const resolutionCatch = [];
+			const naturalPromises = [];
+
 			const EVENT_NAME = 'traditional_promise-like';
+
 			Disp.resolve(EVENT_NAME, RESOLVED_BEFORE);
+
 			Disp.when(EVENT_NAME).then(
 				(v) => { resolutionThen.push(v); },
 				(v) => { resolutionCatch.push(v); }
-			);
+			).then(
+				() => Promise.resolve('NATURAL')
+			).then(
+				v => naturalPromises.push(v)
+			)
+
 			Disp.resolve(EVENT_NAME, RESOLVED_AFTER);
 			Disp.reject(EVENT_NAME, REJECTED);
+
 			Disp.when(EVENT_NAME).then(void 0, (v) => { resolutionCatch.push(v); });
 
 			it('should execute `onFulfilled` once if already resolved and once for every subsequent resolve', () => {
@@ -39,6 +49,12 @@ describe('Dispatcher', () => {
 				expect(resolutionCatch).to.have.length(2);
 				expect(resolutionCatch[0]).to.equal(REJECTED);
 				expect(resolutionCatch[1]).to.equal(REJECTED);
+			});
+
+			it('should accept other promises as return values for `thens`', () => {
+				expect(naturalPromises).to.have.length(2);
+				expect(naturalPromises[0]).to.equal('NATURAL');
+				expect(naturalPromises[1]).to.equal('NATURAL');
 			});
 
 			it('should throw an error if there are missing parameters', () => {
@@ -159,7 +175,7 @@ describe('Dispatcher', () => {
 			expect(resolutionThen).to.have.length(LEN);
 			expect(resolutionThen[0]).to.equal(RESOLVED_AFTER);
 			expect(resolutionThen[LEN-1]).to.equal(RESOLVED_AFTER);
-		})
+		});
 	});
 
 	describe('.reject', () => {
@@ -179,6 +195,6 @@ describe('Dispatcher', () => {
 			expect(resolutionThen).to.have.length(LEN);
 			expect(resolutionThen[0]).to.equal(REJECTED);
 			expect(resolutionThen[LEN-1]).to.equal(REJECTED);
-		})
+		});
 	});
 });
