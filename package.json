@@ -1,7 +1,7 @@
 {
   "name": "thenable-events",
   "version": "2.0.0-0",
-  "description": "Promise-like events",
+  "description": "Powerful event-based system that introduces thenable objects to enable promise-like event handling",
   "main": "./lib/index.js",
   "directories": {
     "example": "example"
@@ -35,7 +35,8 @@
     "emitter",
     "dispatcher",
     "when",
-    "once"
+    "once",
+    "promises/a+"
   ],
   "author": "Joseph Dalrymple <me@swivel.in>",
   "license": "AGPLv3",
