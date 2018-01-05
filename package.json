@@ -3,11 +3,9 @@
   "version": "2.0.1",
   "description": "Powerful event-based system that introduces thenable objects to enable promise-like event handling",
   "main": "./lib/index.js",
-  "dependencies": {
-    "chai": "^4.1.2",
-    "mocha": "^4.0.1"
-  },
   "devDependencies": {
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-plugin-transform-es2015-destructuring": "^6.23.0",
@@ -22,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Swivelgames/thenable-events.git"
+    "url": "https://github.com/Swivelgames/thenable-events.git"
   },
   "keywords": [
     "then",
