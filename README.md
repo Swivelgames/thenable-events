@@ -137,3 +137,38 @@ EventDispatcher.when('api.myendpoint')
     .then(json => console.log({ json }))
     .catch(err => console.error(err));
 ```
+
+#### Test Suite Results
+
+```
+Dispatcher
+  .when()
+	✓ should throw an error if there are too many parameters
+	✓ should be compatible with Promise.all
+	✓ should be compatible with Promise.race
+	.then( onFulfilled, onRejected )
+	  ✓ should execute `onFulfilled` once if already resolved and once for every subsequent resolve
+	  ✓ should execute `onRejected` once if thenable is already rejected and once for every subsequent reject
+	  ✓ should accept other promises as return values for `thens`
+	  ✓ should return properly chainable `thenables`
+	  ✓ should throw an error if there are missing parameters
+	  .catch()
+		✓ should catch when a thenable is rejected within a then
+		✓ should only fulfill catches
+	.once( onFulfilled )
+	  ✓ should only fulfill once
+	  ✓ should fulfill when thenable is already resolved
+	  ✓ should fulfill when a thenable is resolved later
+	  ✓ should throw an error if there are missing parameters
+	.catch()
+	  ✓ should catch when a thenable is already rejected
+	  ✓ should recover if catch returns a value
+	  ✓ should only fulfill catches
+	  ✓ should throw an error if there are missing parameters
+  .resolve
+	✓ should resolve all 3 thens including those in lower namespaces, excluding those in higher namespaces
+	✓ should not resolve absolute thens in lower namespaces
+  .reject
+	✓ should reject all 3 catchs including those in lower namespaces, excluding those in higher namespaces
+	✓ should not reject absolute catchs in lower namespaces
+```
