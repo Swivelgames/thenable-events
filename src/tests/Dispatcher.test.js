@@ -16,6 +16,45 @@ describe('Dispatcher', () => {
 			throw new Error('NO ERROR THROWN');
 		});
 
+		it('should be compatible with Promise.all', () => {
+			const EVENT_NAME_1 = 'promise-all_first';
+			const EVENT_NAME_2 = 'promise-all_second';
+
+			Disp.resolve(EVENT_NAME_1, RESOLVED_BEFORE);
+
+			Promise.all([
+				Disp.when(EVENT_NAME_1),
+				Disp.when(EVENT_NAME_2)
+			]).then(res => {
+				const [RES1, RES2] = res;
+				expect(res).to.have.length(2);
+				expect(RES1).to.equal(RESOLVED_BEFORE);
+				expect(RES2).to.equal(RESOLVED_AFTER);
+			});
+
+			setTimeout(() => {
+				Disp.resolve(EVENT_NAME_2, RESOLVED_AFTER);
+			}, 100);
+		});
+
+		it('should be compatible with Promise.race', () => {
+			const EVENT_NAME_1 = 'promise-race_first';
+			const EVENT_NAME_2 = 'promise-race_second';
+
+			Disp.resolve(EVENT_NAME_1, RESOLVED_BEFORE);
+
+			Promise.race([
+				Disp.when(EVENT_NAME_1),
+				Disp.when(EVENT_NAME_2)
+			]).then(RES1 => {
+				expect(RES1).to.equal(RESOLVED_BEFORE);
+			});
+
+			setTimeout(() => {
+				Disp.resolve(EVENT_NAME_2, RESOLVED_AFTER);
+			}, 100);
+		});
+
 		describe('.then( onFulfilled, onRejected )', () => {
 			const VAL_A = 'VAL_A';
 			const VAL_B = 'VAL_B';
