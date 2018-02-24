@@ -15,7 +15,7 @@
   },
   "scripts": {
     "build": "babel src --out-dir lib",
-    "prepublish": "yarn build",
+    "prepublish": "rm -rf lib && yarn build",
     "test": "yarn build && mocha lib/tests"
   },
   "repository": {
